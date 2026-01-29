@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учет копирайтинга - Управление заказами</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Учет копирайтинга</h1>
+            <p class="header__subtitle">Управление заказами и доходами</p>
+        </header>
+
+        <!-- Секция управления клиентами -->
+        <section class="clients-section">
+            <h2>Клиенты</h2>
+            <form class="clients-form" id="clientsForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="clientName" class="form-label">Имя клиента *</label>
+                        <input type="text" id="clientName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="isCompany">
+                            <span class="form-checkbox__checkmark"></span>
+                            <span class="form-checkbox__label">☑️ Юридическое лицо (автоматический расчет +6% налога)</span>
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn--primary">Добавить клиента</button>
+            </form>
+            <div class="clients-list" id="clientsList">
+                <div class="empty-state" id="clientsEmptyState">
+                    <p>Нет клиентов. Добавьте первого!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Панель статистики -->
+        <section class="stats">
+            <div class="stats__card stats__card--income">
+                <div class="stats__icon">💰</div>
+                <div class="stats__content">
+                    <h3>Полученный доход</h3>
+                    <div class="stats__value" id="totalIncome">0,00 ₽</div>
+                </div>
+            </div>
+            <div class="stats__card stats__card--debt">
+                <div class="stats__icon">📋</div>
+                <div class="stats__content">
+                    <h3>Долг клиентов</h3>
+                    <div class="stats__value" id="totalDebt">0,00 ₽</div>
+                </div>
+            </div>
+            <div class="stats__card stats__card--tax">
+                <div class="stats__icon">🧾</div>
+                <div class="stats__content">
+                    <h3>Налог к уплате</h3>
+                    <div class="stats__value" id="totalTax">0,00 ₽</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Форма добавления/редактирования заказа -->
+        <section class="form-section" id="formSection">
+            <h2 id="formTitle">Добавить новый заказ</h2>
+            <form class="order-form" id="orderForm">
+                <div class="form-group">
+                    <label for="clientSelect" class="form-label">Клиент *</label>
+                    <select id="clientSelect" class="form-control" required>
+                        <option value="">Сначала добавьте клиента</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="title" class="form-label">Название статьи *</label>
+                    <input type="text" id="title" class="form-control" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="symbols" class="form-label">Количество символов *</label>
+                        <input type="number" id="symbols" class="form-control" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price" class="form-label">Цена за 1000 символов (₽) *</label>
+                        <input type="number" id="price" class="form-control" min="0.01" step="0.01" required>
+                    </div>
+                </div>
+                
+                <!-- Калькулятор стоимости -->
+                <div class="cost-calculator" id="costCalculator" style="display: none;">
+                    <h3>Расчет стоимости</h3>
+                    <div class="cost-details">
+                        <div class="cost-line">
+                            <span>Базовая стоимость:</span>
+                            <span id="baseCost">0,00 ₽</span>
+                        </div>
+                        <div class="cost-line tax-line" id="taxLine" style="display: none;">
+                            <span>Налог 6%:</span>
+                            <span id="taxAmount">+0,00 ₽</span>
+                        </div>
+                        <div class="cost-line total-line">
+                            <span><strong>ИТОГО к выставлению:</strong></span>
+                            <span id="finalCost"><strong>0,00 ₽</strong></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn--primary" id="addOrderBtn" disabled>Добавить заказ</button>
+                    <button type="button" class="btn btn--secondary" id="cancelEditBtn" style="display: none;">❌ Отменить</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Фильтрация -->
+        <section class="filter-section">
+            <h2>Фильтры</h2>
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="dateFilter" class="form-label">Период:</label>
+                    <select id="dateFilter" class="form-control">
+                        <option value="all">Все периоды</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="clientFilter" class="form-label">Клиент:</label>
+                    <select id="clientFilter" class="form-control">
+                        <option value="all">Все клиенты</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Управление данными -->
+        <section class="data-management-section">
+            <h2>Управление данными</h2>
+            <div class="data-management-buttons">
+                <button class="btn btn--success btn-icon btn-export" id="createBackup">
+                    📥 ЭКСПОРТ ДАННЫХ (скачать файл)
+                </button>
+                <button class="btn btn--primary btn-icon" id="importData">
+                    📤 ИМПОРТ ДАННЫХ (загрузить файл)
+                </button>
+                <button class="btn btn--secondary btn-icon" id="restoreBackup">
+                    🔄 ВОССТАНОВИТЬ ИЗ БЭКАПА
+                </button>
+                <button class="btn btn--error btn-icon" id="clearData">
+                    🗑️ ОЧИСТИТЬ ВСЁ
+                </button>
+            </div>
+            <input type="file" id="importFileInput" accept=".json" style="display: none;">
+        </section>
+
+        <!-- Индикатор сохранения -->
+        <div class="save-indicator" id="saveIndicator">
+            <span id="saveStatus">✓ Данные сохранены</span>
+        </div>
+
+        <!-- Список заказов -->
+        <section class="orders-section">
+            <h2>Список заказов</h2>
+            <div id="ordersList" class="orders-list">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state__icon">📝</div>
+                    <h3>Нет заказов</h3>
+                    <p>Добавьте первый заказ!</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div class="modal" id="deleteModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+            <h3>Подтверждение удаления</h3>
+            <p>Вы уверены, что хотите удалить заказ "<span id="deleteOrderTitle"></span>"?</p>
+            <div class="modal__actions">
+                <button class="btn btn--outline" id="cancelDelete">Отмена</button>
+                <button class="btn btn--primary" id="confirmDelete">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения импорта -->
+    <div class="modal" id="importModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+            <h3>Подтверждение импорта</h3>
+            <p>Импорт заменит все текущие данные. Продолжить?</p>
+            <div class="modal__actions">
+                <button class="btn btn--outline" id="cancelImport">Отмена</button>
+                <button class="btn btn--primary" id="confirmImport">Импортировать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения восстановления -->
+    <div class="modal" id="restoreModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+            <h3>Восстановление данных</h3>
+            <p>Восстановить данные из резервной копии?</p>
+            <div class="modal__actions">
+                <button class="btn btn--outline" id="cancelRestore">Отмена</button>
+                <button class="btn btn--primary" id="confirmRestore">Восстановить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения очистки -->
+    <div class="modal" id="clearModal">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+            <h3>Очистка данных</h3>
+            <p><strong>Вы уверены? Все данные будут удалены!</strong></p>
+            <p>Это действие нельзя отменить.</p>
+            <div class="modal__actions">
+                <button class="btn btn--outline" id="cancelClear">Отмена</button>
+                <button class="btn btn--error" id="confirmClear">Удалить все</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast уведомления -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
